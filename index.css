@@ -41,16 +41,37 @@ body {
   color: var(--text-primary);
   height: 100vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.window-drag-handle {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 45px;
+.app-title-bar {
+  height: 40px;
+  background-color: #07070f;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   -webkit-app-region: drag;
+  flex-shrink: 0;
   z-index: 9999;
+  user-select: none;
+}
+
+.title-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.title-bar-icon {
+  color: var(--accent-purple);
+  font-weight: 800;
 }
 
 .glass {
@@ -74,7 +95,7 @@ body {
 
 .app-container {
   display: flex;
-  height: 100vh;
+  height: calc(100vh - 40px);
   width: 100vw;
   background: radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.08), transparent 45%),
               radial-gradient(circle at 10% 80%, rgba(168, 85, 247, 0.08), transparent 45%),
@@ -88,7 +109,7 @@ body {
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border-light);
-  padding: 45px 16px 20px 16px;
+  padding: 20px 16px;
   z-index: 10;
   overflow-y: auto;
 }
@@ -285,8 +306,8 @@ body {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding: 45px 20px 20px 20px;
-  height: 100vh;
+  padding: 20px;
+  height: 100%;
   position: relative;
   overflow: hidden;
 }
@@ -969,7 +990,7 @@ small {
 /* ===== TOASTS ===== */
 .toast-container {
   position: fixed;
-  top: 20px;
+  top: 130px;
   right: 20px;
   z-index: 2000;
   display: flex;
