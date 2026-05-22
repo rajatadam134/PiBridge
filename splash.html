@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiBridge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #07070f;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+
+    /* Radial glow background */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 40%, rgba(168, 85, 247, 0.18), transparent 70%),
+        radial-gradient(ellipse 40% 30% at 60% 60%, rgba(59, 130, 246, 0.10), transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Animated grid lines */
+    .grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(168,85,247,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168,85,247,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* Logo ring */
+    .logo-ring {
+      position: relative;
+      width: 96px;
+      height: 96px;
+    }
+
+    .logo-ring-outer {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, rgba(168,85,247,0.6), rgba(59,130,246,0.6)) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      animation: spinSlow 4s linear infinite;
+    }
+
+    .logo-icon {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a855f7, #3b82f6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      font-weight: 800;
+      color: white;
+      box-shadow:
+        0 0 30px rgba(168,85,247,0.5),
+        0 0 60px rgba(168,85,247,0.2);
+    }
+
+    /* Pulse ring */
+    .logo-pulse {
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      animation: pulseRing 2s ease-out infinite;
+    }
+    .logo-pulse-2 {
+      position: absolute;
+      inset: -16px;
+      border-radius: 50%;
+      border: 1px solid rgba(168, 85, 247, 0.15);
+      animation: pulseRing 2s ease-out infinite 0.5s;
+    }
+
+    .app-name {
+      text-align: center;
+    }
+
+    .app-name h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #ffffff, #d8b4fe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+
+    .app-name .tagline {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 5px;
+      display: block;
+    }
+
+    /* Loading bar */
+    .loader-track {
+      width: 200px;
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .loader-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #a855f7, #3b82f6);
+      border-radius: 2px;
+      animation: loadBar 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      box-shadow: 0 0 8px rgba(168,85,247,0.6);
+    }
+
+    .loading-text {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.5px;
+      animation: blink 1.4s ease infinite;
+    }
+
+    /* Version tag */
+    .version-tag {
+      position: fixed;
+      bottom: 18px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.5px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseRing {
+      0%   { opacity: 0.8; transform: scale(1); }
+      100% { opacity: 0;   transform: scale(1.6); }
+    }
+
+    @keyframes loadBar {
+      0%   { width: 0%; }
+      30%  { width: 40%; }
+      60%  { width: 70%; }
+      85%  { width: 88%; }
+      100% { width: 100%; }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="grid"></div>
+
+  <div class="content">
+    <div class="logo-ring">
+      <div class="logo-pulse"></div>
+      <div class="logo-pulse-2"></div>
+      <div class="logo-ring-outer"></div>
+      <div class="logo-icon">π</div>
+    </div>
+
+    <div class="app-name">
+      <h1>PiBridge</h1>
+      <span class="tagline">Enterprise Suite</span>
+    </div>
+
+    <div class="loader-track">
+      <div class="loader-bar"></div>
+    </div>
+
+    <span class="loading-text">Initializing...</span>
+  </div>
+
+  <span class="version-tag">v1.2.0</span>
+</body>
+</html>

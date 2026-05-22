@@ -1,0 +1,61 @@
+{
+  "name": "pibridge",
+  "version": "1.2.0",
+  "productName": "PiBridge",
+  "description": "Cross-platform Raspberry Pi auto-discovery, SSH, VNC, and remote management suite",
+  "author": "PiBridge Team",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "make-ico": "node make-ico.js",
+    "dist": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.pibridge.app",
+    "productName": "PiBridge",
+    "icon": "build/icon.ico",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "publish": [
+        {
+          "provider": "github",
+          "owner": "rajatadam134",
+          "repo": "PiBridge"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PiBridge",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "perMachine": true
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3",
+    "ssh2": "^1.16.0",
+    "ws": "^8.20.1",
+    "xterm": "^5.3.0",
+    "xterm-addon-fit": "^0.8.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^26.8.1",
+    "png-to-ico": "^2.1.8"
+  }
+}

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiBridge - Raspberry Pi Remote Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="window-drag-handle" id="window-drag-handle"></div>
+  <div class="app-container">
+    <!-- Sidebar / Brand Panel -->
+    <aside class="sidebar glass">
+      <div class="brand">
+        <div class="logo-icon">π</div>
+        <div class="brand-text">
+          <h1>PiBridge</h1>
+          <span class="tagline">Enterprise Suite</span>
+        </div>
+      </div>
+      
+      <nav class="nav-menu">
+        <button id="nav-scan-btn" class="nav-item active" data-view="scan">
+          <span class="icon">🔍</span> Discovery
+        </button>
+        <button id="nav-terminal-btn" class="nav-item" data-view="terminal">
+          <span class="icon">💻</span> Terminal
+        </button>
+        <button id="nav-sftp-btn" class="nav-item" data-view="sftp">
+          <span class="icon">📂</span> File Explorer
+        </button>
+        <button id="nav-vnc-btn" class="nav-item" data-view="vnc">
+          <span class="icon">🖥️</span> VNC Desktop
+        </button>
+        <button id="nav-installer-btn" class="nav-item" data-view="installer">
+          <span class="icon">📦</span> App Store
+        </button>
+        <button id="nav-backup-btn" class="nav-item" data-view="backup">
+          <span class="icon">💾</span> Backup
+        </button>
+
+        <div class="nav-divider"></div>
+
+        <button id="nav-settings-btn" class="nav-item" data-view="settings">
+          <span class="icon">⚙️</span> Settings
+        </button>
+      </nav>
+
+      <div class="scan-status-panel">
+        <h3>Scanner Status</h3>
+        <div class="scanner-visual">
+          <div class="pulse-ring"></div>
+          <div class="scanner-text" id="scan-progress-text">Ready</div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="scan-progress-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Active device selector -->
+      <div class="active-device-panel" id="active-device-panel" style="display:none;">
+        <h3>Active Target</h3>
+        <div class="active-device-info">
+          <span class="status-dot green"></span>
+          <span id="active-device-ip">---</span>
+        </div>
+        <select id="device-selector" class="form-control device-selector"></select>
+      </div>
+
+      <div class="sidebar-footer">
+        <span class="version">v1.2.0</span>
+        <a href="#" id="docs-link" class="help-link">How it works</a>
+      </div>
+    </aside>
+
+    <!-- Main Dashboard Area -->
+    <main class="main-content">
+      <!-- Top Action Bar -->
+      <header class="top-bar glass">
+        <div class="header-left">
+          <h2 id="view-title">Network Discovery</h2>
+          <p id="network-info">Detecting interfaces...</p>
+        </div>
+        <div class="header-actions">
+          <button id="scan-btn" class="btn btn-primary btn-glow">
+            <span class="btn-icon">⚡</span> Scan Network
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Views -->
+      <div class="view-container">
+        <!-- ===== Devices/Discovery View ===== -->
+        <section id="devices-view" class="view active">
+          <div class="section-header">
+            <h3>Discovered Targets</h3>
+            <span class="count-badge" id="pi-count">0 Found</span>
+          </div>
+          <div class="empty-state" id="empty-state">
+            <div class="empty-icon">📶</div>
+            <h4>No devices detected yet</h4>
+            <p>Click "Scan Network" above to scan your local network or toggle Demo Mode in Settings.</p>
+          </div>
+          <div class="devices-grid" id="devices-grid" style="display: none;"></div>
+        </section>
+
+        <!-- ===== Terminal View ===== -->
+        <section id="terminal-view" class="view">
+          <div class="module-container" id="terminal-container">
+            <div class="module-placeholder">
+              <div class="empty-icon">💻</div>
+              <h4>SSH Terminal</h4>
+              <p>Scan the network and select a device to launch a terminal session.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== SFTP File Explorer View ===== -->
+        <section id="sftp-view" class="view">
+          <div class="module-container" id="sftp-container">
+            <div class="module-placeholder">
+              <div class="empty-icon">📂</div>
+              <h4>SFTP File Explorer</h4>
+              <p>Scan the network and select a device to browse its filesystem.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== VNC Desktop View ===== -->
+        <section id="vnc-view" class="view">
+          <div class="module-container" id="vnc-container">
+            <div class="module-placeholder">
+              <div class="empty-icon">🖥️</div>
+              <h4>Embedded VNC Desktop</h4>
+              <p>Scan the network and select a device to view its desktop remotely.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== App Installer View ===== -->
+        <section id="installer-view" class="view">
+          <div class="module-container" id="installer-container">
+            <div class="module-placeholder">
+              <div class="empty-icon">📦</div>
+              <h4>App Store for Pi</h4>
+              <p>Scan the network and select a device to install applications.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== Backup View ===== -->
+        <section id="backup-view" class="view">
+          <div class="module-container" id="backup-container">
+            <div class="module-placeholder">
+              <div class="empty-icon">💾</div>
+              <h4>SD Card Backup & Restore</h4>
+              <p>Scan the network and select a device to manage backups.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== Settings View ===== -->
+        <section id="settings-view" class="view">
+          <div class="section-header">
+            <h3>Configuration Settings</h3>
+          </div>
+          <div class="settings-card glass">
+            <form id="settings-form">
+              <div class="form-group toggle-group glass-inset">
+                <div class="toggle-container">
+                  <label class="switch">
+                    <input type="checkbox" id="demo-mode-input">
+                    <span class="slider round"></span>
+                  </label>
+                  <div class="toggle-label-group">
+                    <span class="toggle-title">Interactive Demo Mode</span>
+                    <small>Simulates discovery, stats, and all features without physical hardware.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ssh-user-input">Default SSH Username</label>
+                <input type="text" id="ssh-user-input" class="form-control" placeholder="pi" required>
+                <small>Used for credentials autofill (default on Raspberry Pi OS is 'pi')</small>
+              </div>
+              <div class="form-group">
+                <label for="ssh-pass-input">Default SSH Password</label>
+                <input type="password" id="ssh-pass-input" class="form-control" placeholder="raspberry" required>
+                <small>SSH password (default on Raspberry Pi OS is 'raspberry')</small>
+              </div>
+              <div class="form-group">
+                <label for="vnc-path-input">Custom VNC Viewer Executable Path (Optional)</label>
+                <input type="text" id="vnc-path-input" class="form-control" placeholder="e.g. C:\Program Files\RealVNC\VNC Viewer\vncviewer.exe">
+                <small>Leave empty to auto-detect RealVNC Viewer on your system.</small>
+              </div>
+              <div class="row">
+                <div class="form-group col">
+                  <label for="scan-timeout-input">Scan Port Timeout (ms)</label>
+                  <input type="number" id="scan-timeout-input" class="form-control" min="200" max="5000" required>
+                </div>
+                <div class="form-group col">
+                  <label for="scan-concurrency-input">Scan Concurrency</label>
+                  <input type="number" id="scan-concurrency-input" class="form-control" min="5" max="100" required>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-secondary">Save Settings</button>
+            </form>
+          </div>
+
+          <!-- Software Updates Card -->
+          <div class="settings-card glass" style="margin-top: 20px;">
+            <h4 style="margin-bottom: 8px; color: #fff;">Software Updates</h4>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 15px;">Check for updates and manage auto-update preferences.</p>
+            
+            <div id="updater-container">
+              <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <button type="button" id="check-updates-btn" class="btn btn-secondary">Check for Updates</button>
+                <span id="update-status-text" style="font-size: 13px; color: rgba(255,255,255,0.4);">Current Version: v1.2.0</span>
+              </div>
+              
+              <!-- Download progress bar (hidden by default) -->
+              <div id="updater-progress-wrapper" style="display: none; margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 5px;">
+                  <span>Downloading Update...</span>
+                  <span id="updater-progress-percent">0%</span>
+                </div>
+                <div class="progress-track" style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; width: 100%;">
+                  <div id="updater-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #a855f7, #3b82f6); transition: width 0.1s ease; border-radius: 3px;"></div>
+                </div>
+              </div>
+
+              <!-- Install update action (hidden by default) -->
+              <div id="updater-install-wrapper" style="display: none; margin-top: 15px; align-items: center; gap: 15px;">
+                <button type="button" id="install-update-btn" class="btn" style="background: linear-gradient(135deg, #a855f7, #3b82f6); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px;">Restart to Install</button>
+                <span style="font-size: 13px; color: #a855f7; font-weight: 600;">Update downloaded and ready!</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Live Logs Console -->
+      <footer class="logs-console glass">
+        <div class="console-header" id="toggle-console">
+          <div class="console-title">
+            <span class="status-dot green"></span>
+            System Activity Monitor
+          </div>
+          <button class="console-toggle-btn">▼</button>
+        </div>
+        <div class="console-body" id="console-logs">
+          <div class="log-entry system">[System] PiBridge Enterprise Suite initialized.</div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Credentials Modal -->
+  <div class="modal-overlay" id="creds-modal">
+    <div class="modal glass">
+      <div class="modal-header">
+        <h3>SSH Credentials Verification</h3>
+        <button class="close-modal" id="close-creds-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Connecting to <strong id="target-pi-ip">192.168.1.XX</strong>. Confirm SSH credentials to auto-enable VNC:</p>
+        <form id="creds-form">
+          <input type="hidden" id="target-ip-hidden">
+          <div class="form-group">
+            <label for="modal-ssh-user">SSH Username</label>
+            <input type="text" id="modal-ssh-user" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-ssh-pass">SSH Password</label>
+            <input type="password" id="modal-ssh-pass" class="form-control" required>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-text" id="cancel-creds-btn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="confirm-creds-btn">Connect & Enable VNC</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Frontend Module Scripts (v1.2.0) -->
+  <script src="src/frontend/sftp.js"></script>
+  <script src="src/frontend/terminal.js"></script>
+  <script src="src/frontend/vnc.js"></script>
+  <script src="src/frontend/installer.js"></script>
+  <script src="src/frontend/backup.js"></script>
+
+  <!-- Main Renderer -->
+  <script src="renderer.js"></script>
+</body>
+</html>
