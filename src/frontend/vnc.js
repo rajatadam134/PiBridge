@@ -356,11 +356,17 @@
       };
 
       ws.onmessage = (event) => {
-        const uintArr = new Uint8Array(event.data);
-        for (let i = 0; i < uintArr.length; i++) {
-          rfbBuffer.push(uintArr[i]);
+        try {
+          const uintArr = new Uint8Array(event.data);
+          for (let i = 0; i < uintArr.length; i++) {
+            rfbBuffer.push(uintArr[i]);
+          }
+          parseRfbStream();
+        } catch (err) {
+          console.error('[VNC Client] stream parse error:', err);
+          showToast('VNC Protocol Error: ' + err.message, 'error');
+          handleDisconnect('Protocol error: ' + err.message);
         }
-        parseRfbStream();
       };
 
       ws.onclose = (event) => {
@@ -388,6 +394,7 @@
         }
         ws.send(reply);
         rfbState = 'WAITING_SECURITY';
+        setBanner('⏳', 'Handshaking...', 'Negotiating security types...');
         parseRfbStream(); // Check if there are more bytes in buffer
 
       } else if (rfbState === 'WAITING_SECURITY') {
@@ -405,6 +412,7 @@
 
         if (selected === 1) {
           rfbState = 'WAITING_SECURITY_RESULT';
+          setBanner('⏳', 'Handshaking...', 'Verifying security result...');
         } else {
           setBanner('🔑', 'VNC Authentication', 'Negotiating password exchange...');
           rfbState = 'WAITING_SECURITY_RESULT';
@@ -421,6 +429,7 @@
           // ClientInit: Shared-Desktop flag (1 byte = 1)
           ws.send(new Uint8Array([1]));
           rfbState = 'WAITING_SERVER_INIT';
+          setBanner('⏳', 'Handshaking...', 'Initializing session configuration...');
         } else {
           console.error('[VNC Client] VNC auth failed:', code);
           showToast('VNC Authentication failed. Check Pi server config.', 'error');
@@ -735,8 +744,11 @@
       setStatus('CONNECTING');
       setBanner('⏳', 'Initializing VNC Session...', 'Spawning websocket tunnel...');
 
-      try {
-        const result = await pibridge.vncProxyStart({ ip: credentials.ip, port: 5900 });
+        const result = await pibridge.vncProxyStart({
+          ip: credentials.ip,
+          port: 5900,
+          password: credentials.password
+        });
         if (result && result.success) {
           rfbPort = result.wsPort;
           console.log('[VNC] Proxy launched successfully on local port:', rfbPort);
